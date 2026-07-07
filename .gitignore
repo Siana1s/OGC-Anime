@@ -1,0 +1,38 @@
+﻿# Visual Studio
+.vs/
+bin/
+obj/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+[Dd]ebug/
+[Rr]elease/
+[Xx]64/
+[Xx]86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+[Bb]uild/
+[Bb]uilds/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+*.pdb
+*.idb
+*.ilk
+*.exp
+*.obj
+*.log
+*.tlog
+*.lastbuildstate
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editors
+*.swp
+*~

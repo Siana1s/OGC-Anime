@@ -1,0 +1,222 @@
+﻿<!DOCTYPE html>
+
+<html>
+	<head>
+		<!-- Стилове за текстовете по екрана -->
+		<style>
+			body   {color: black; text-shadow: 0 0 1px gray; font-family: Calibri;}
+			h1     {position: fixed; z-index: 10; top: 0; left: 0; text-align: center; width: 100%;}
+			div    {position: fixed; z-index: 10; bottom: 1em; left: 1em; font-size: 1.5em; font-style: italic;}
+			button {width: 6em; font-size: 70%; border-radius: 1em;}
+		</style>
+
+		<!-- Нужни са за ползване на библиотеката, без инсталиране на nodes -->
+		<script type="importmap">
+		{
+			"imports": {
+				"three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.min.js",
+				"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.min.js",
+				"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.min.js",
+				"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+				"disfigure": "https://boytchev.github.io/disfigure/dist/disfigure.min.js"
+			}
+		}
+		</script>
+	</head>
+	
+	<body>
+	
+		<!-- Сложете реално заглавие -->
+		<h1> Гимнастика за релакс
+			<br>
+			<button id="start">Старт</button>
+		</h1>  
+		
+		<!-- Сложете описание на сцената (опитайте с рима) -->
+        <div>
+            релаксираща гимнастика с<br>
+            професионален треньор<br />
+        </div>
+
+		
+		<script type="module">
+			
+			// Зареждане на библиотеката
+			import * as THREE from 'three';
+			import * as Happy from 'disfigure';
+
+			// Създаване на сцена с интерактивност
+			new Happy.World({antialias:true});
+			
+			// Създаване на фигура
+            const people = [
+                { type: 'Man', height: 1.85, delay: 0.0 }, // инструктор
+                { type: 'Woman', height: 1.70, delay: 0.4 },
+                { type: 'Man', height: 1.75, delay: 0.8 },
+                { type: 'Child', height: 1.35, delay: 1.2 }
+            ];
+			
+			// Пускане на музиката и скриване на бутона
+			var music = new Audio();
+				music.src = 'Arktype_-_Hot_Pursuit.mp3';
+				
+			var button = document.getElementById('start');
+			
+			button.onclick = function ( )
+			{
+				music.play();
+				button.style.display = 'none';
+			}
+							
+			var figures = [];
+
+            people.forEach((p, i) => {
+                let fig;
+
+                if (p.type === 'Man') fig = new Happy.Man();
+                if (p.type === 'Woman') fig = new Happy.Woman();
+                if (p.type === 'Child') fig = new Happy.Child();
+
+                // мащаб според ръста
+                const scale = p.height / 1.75;
+                fig.scale.set(scale, scale, scale);
+
+                // позициониране
+                if (i === 0) {
+                    // инструктор в центъра
+                    fig.position.x = 0;
+                    fig.position.z = -1;
+                    fig.rotation.y = Math.PI; // гръб към камерата
+                } else {
+                    // останалите фигури срещу инструктора на различно разстояние
+                    const spacing = 1.5; // колко далеч са един от друг
+                    fig.position.x = (i - 1) * spacing - 2; // примерно -2, 0.5, 3 ...
+                    fig.position.z = -4;  // разстояние пред инструктора
+                    fig.rotation.y = Math.PI / 12; // леко завъртяни към инструктора
+                }
+
+                fig.l_ankle.tilt = -12;
+                fig.r_ankle.tilt = -12;
+
+                fig.delay = p.delay;
+
+                if (p.type === 'Man') {
+                    fig.dress([
+                        Happy.velour('LightSkyBlue'),
+
+                        Happy.slice(0.6, 1.1),
+                        Happy.velour('navy')
+                    ]);
+                }
+
+                if (p.type === 'Woman') {
+                    fig.dress([
+                        Happy.velour('Lavender'),
+
+                        // рокля
+                        Happy.slice(0.7, 1.4, { wave: 0.3, width: 0.15 }),
+                        Happy.velour('MediumPurple')
+                    ]);
+                }
+
+                if (p.type === 'Child') {
+                    fig.dress([
+                        Happy.velour('LightSkyBlue'),
+
+                        Happy.slice(0.6, 1.1),
+                        Happy.velour('navy')
+                    ]);
+                }
+
+                figures.push(fig);
+            });
+                
+            function moveFigure(figure, t) {
+
+                const slow = t * 1.2;
+                const s1 = Math.sin(slow);
+                const s2 = Math.cos(slow);
+
+                // кой сет сме
+                const phase = Math.floor(t / 6) % 2;
+
+                // =========================
+                // SET A – БОКС / TAE BO
+                // =========================
+                if (phase === 0) {
+
+                    // стабилна стойка
+                    figure.torso.tilt = 3 * s1;
+                    figure.chest.turn = 12 * s2;
+
+                    // глава
+                    figure.head.turn = 5 * s2;
+
+                    // ръце – удари
+                    figure.l_arm.forward = 30 + 25 * s1;
+                    figure.r_arm.forward = 30 - 25 * s1;
+
+                    figure.l_elbow.bend = 70;
+                    figure.r_elbow.bend = 70;
+
+                    // китки – стегнати
+                    figure.l_wrist.bend = -10;
+                    figure.r_wrist.bend = -10;
+
+                    // лека смяна на тежестта
+                    figure.l_leg.straddle = 16 + 4 * s1;
+                    figure.r_leg.straddle = 16 - 4 * s1;
+                }
+
+                // =========================
+                // SET B – РИТНИЦИ
+                // =========================
+                else {
+
+                    // подготовка за ритник
+                    figure.torso.turn = 10 * s1;
+                    figure.chest.turn = 15 * s1;
+
+                    // ръце за баланс
+                    figure.l_arm.straddle = 35;
+                    figure.r_arm.straddle = 35;
+
+                    figure.l_elbow.bend = 40;
+                    figure.r_elbow.bend = 40;
+
+                    // РИТНИК (редуване ляв / десен)
+                    const kick = Math.max(0, Math.sin(slow));
+
+                    figure.r_leg.forward = 40 * kick;
+                    figure.r_knee.bend = 50 * kick;
+                    figure.r_ankle.bend = -20 * kick;
+
+                    // опорен крак
+                    figure.l_leg.forward = -5;
+                    figure.l_knee.bend = 10;
+
+                    // баланс
+                    figure.torso.tilt = 5 * kick;
+                }
+            }
+
+
+
+
+            function animate() {
+                let baseTime = music.currentTime;
+
+                figures.forEach(fig => {
+                    let t = baseTime - fig.delay;
+                    if (t > 0) moveFigure(fig, t);
+                });
+            }
+
+
+            Happy.setAnimationLoop(animate);
+
+            
+						
+		</script>
+	</body>
+</html>
